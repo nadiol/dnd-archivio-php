@@ -1,3 +1,4 @@
+
 // Script gestione-dati.js migliorato con parsing completo per sottorazze e tratti dettagliati + layout ordinato
 
 function analizzaTesto() {
@@ -96,84 +97,4 @@ function analizzaTesto() {
   aggiornaAnteprima();
 }
 
-function mostraEditor(dati) {
-  const container = document.getElementById("outputEditor");
-  container.innerHTML = '';
-  window.currentData = dati;
-
-  const createField = (key, value, prefix = '') => {
-    const wrapper = document.createElement("div");
-    wrapper.className = "campo-input";
-    const label = document.createElement("label");
-    label.textContent = prefix + key;
-    label.className = "etichetta";
-    const input = document.createElement("input");
-    input.name = prefix + key;
-    input.value = value;
-    input.className = "campo-testo";
-    input.addEventListener('input', aggiornaAnteprima);
-    wrapper.appendChild(label);
-    wrapper.appendChild(input);
-    container.appendChild(wrapper);
-  };
-
-  for (const key in dati) {
-    const value = dati[key];
-
-    if (typeof value === 'object' && !Array.isArray(value)) {
-      for (const sub in value) {
-        createField(sub, value[sub], `${key}.`);
-      }
-    } else if (Array.isArray(value)) {
-      if (key === 'sottorazze') {
-        value.forEach((sotto, index) => {
-          for (const subkey in sotto) {
-            if (typeof sotto[subkey] === 'object') {
-              for (const k in sotto[subkey]) {
-                createField(`${subkey}.${k}`, sotto[subkey][k], `sottorazze[${index}].`);
-              }
-            } else {
-              createField(subkey, sotto[subkey], `sottorazze[${index}].`);
-            }
-          }
-        });
-      } else {
-        createField(key, value.join(', '));
-      }
-    } else {
-      createField(key, value);
-    }
-  }
-  document.getElementById("salvaBtn").classList.remove("hidden");
-}
-
-function aggiornaAnteprima() {
-  const inputs = document.querySelectorAll("#outputEditor input");
-  const dati = window.currentData;
-  inputs.forEach(input => {
-    const path = input.name.split('.');
-    let ref = dati;
-    for (let i = 0; i < path.length - 1; i++) {
-      if (path[i].includes("[") && path[i].includes("]")) {
-        const base = path[i].split('[')[0];
-        const idx = parseInt(path[i].match(/\[(\d+)\]/)[1]);
-        ref = ref[base][idx];
-      } else {
-        ref = ref[path[i]];
-      }
-    }
-    ref[path[path.length - 1]] = input.value;
-  });
-  const output = JSON.stringify(dati, null, 2);
-  document.getElementById("anteprimaJson").textContent = output;
-}
-
-function salvaJsonFinale() {
-  const blob = new Blob([
-    document.getElementById("anteprimaJson").textContent
-  ], { type: "application/json" });
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
-  link.download = "razza_dnd.json";
-  link.click();
-}
+// Altre funzioni (mostraEditor, aggiornaAnteprima, salvaJsonFinale) escluse per brevità

@@ -1,1 +1,1 @@
-<?php /* config */ ?>
+<?php // Configurazione database o variabili ?>
