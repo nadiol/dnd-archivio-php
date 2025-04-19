@@ -1,1 +1,1 @@
-<?php // Configurazioni future, se necessarie ?>
+<?php /* config */ ?>
