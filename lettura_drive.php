@@ -1,5 +1,6 @@
 <?php include_once 'utils.php'; ?>
 <?php include 'includes/header.php'; ?>
+<link rel="stylesheet" href="css/lettura.css">
 
 <h1 class="titolo">Visualizza contenuti da Google Drive</h1>
 
