@@ -17,11 +17,11 @@ $json_raw = scarica_da_drive("1_FqDS1q3XmOHeJf46TtqGWgGq69IQik2");
 
 $index_data = null;
 if (!$json_raw) {
-    echo "<p style='color:red;'>\u26a0\ufe0f Errore: impossibile scaricare il file index da Google Drive.</p>";
+    echo "<p style='color:red;'>⚠️ Errore: impossibile scaricare il file index da Google Drive.</p>";
 } else {
     $index_data = json_decode($json_raw, true);
     if (!$index_data) {
-        echo "<p style='color:red;'>\u26a0\ufe0f Errore: il file scaricato non \u00e8 un JSON valido.</p>";
+        echo "<p style='color:red;'>⚠️ Errore: il file scaricato non è un JSON valido.</p>";
         echo "<pre>" . htmlspecialchars($json_raw) . "</pre>";
     }
 }
@@ -80,6 +80,10 @@ if ($index_data) {
 
     <div id="contenutoJSON">
     <?php 
+        function etichetta($chiave) {
+            return ucfirst(str_replace('_', ' ', $chiave));
+        }
+
         if (isset($dati['nome']) || isset($dati['tratti'])) {
             echo "<div class='box'>";
             echo "<h3>" . ripristina_accenti($dati['nome'] ?? '[nome non presente]') . "</h3>";
@@ -88,7 +92,15 @@ if ($index_data) {
             if (!empty($dati['tratti'])) {
                 echo "<h4>Tratti</h4><ul>";
                 foreach ($dati['tratti'] as $k => $v) {
-                    echo "<li><strong>" . ucfirst($k) . ":</strong> " . (is_array($v) ? json_encode($v, JSON_UNESCAPED_UNICODE) : ripristina_accenti($v)) . "</li>";
+                    echo "<li><strong>" . etichetta($k) . ":</strong><br>";
+                    if (is_array($v)) {
+                        foreach ($v as $subk => $subv) {
+                            echo "• <em>" . etichetta($subk) . ":</em> " . (is_array($subv) ? json_encode($subv, JSON_UNESCAPED_UNICODE) : ripristina_accenti($subv)) . "<br>";
+                        }
+                    } else {
+                        echo ripristina_accenti($v);
+                    }
+                    echo "</li>";
                 }
                 echo "</ul>";
             }
