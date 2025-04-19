@@ -2,7 +2,5 @@ services:
   - type: web
     name: dnd-archivio-php
     env: docker
-    repo: https://github.com/nadiol/dnd-archivio-php
     plan: free
-    dockerfilePath: ./Dockerfile
-    branch: main
+    dockerfilePath: Dockerfile
