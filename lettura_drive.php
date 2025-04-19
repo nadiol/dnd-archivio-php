@@ -105,7 +105,7 @@ async function mostraContenutiMultipli(voci) {
     const id = idMap[voce];
     const res = await fetch(`https://drive.google.com/uc?export=download&id=${id}`);
     const json = await res.json();
-    return `<div class="box"><h2 class="titolo-voce">${voce}</h2><pre>${JSON.stringify(json, null, 2)}</pre></div>`;
+    return renderizzaVoce(voce, json);
   }));
   contenitore.innerHTML = blocchi.join('<div class="separatore"></div>');
 }
@@ -116,7 +116,7 @@ async function caricaContenutoSingolo(voce) {
   contenitore.innerHTML = "Caricamento...";
   const res = await fetch(`https://drive.google.com/uc?export=download&id=${idMap[voce]}`);
   const json = await res.json();
-  contenitore.innerHTML = `<div class="box"><h2 class="titolo-voce">${voce}</h2><pre>${JSON.stringify(json, null, 2)}</pre></div>`;
+  contenitore.innerHTML = renderizzaVoce(voce, json);
 }
 
 function filtraContenuto() {
@@ -126,6 +126,19 @@ function filtraContenuto() {
     const text = box.innerText.toLowerCase();
     box.style.display = text.includes(input) ? "" : "none";
   });
+}
+
+function renderizzaVoce(nome, json) {
+  const render = (key, value) => {
+    if (Array.isArray(value)) {
+      return '<ul>' + value.map(v => `<li>${typeof v === 'object' ? render('', v) : v}</li>`).join('') + '</ul>';
+    } else if (typeof value === 'object') {
+      return '<ul>' + Object.entries(value).map(([k, v]) => `<li><strong>${k}:</strong> ${render(k, v)}</li>`).join('') + '</ul>';
+    } else {
+      return value;
+    }
+  };
+  return `<div class="box"><h2 class="titolo-voce">${nome}</h2>${render('', json)}</div>`;
 }
 
 async function getIdForIndex(categoria) {
