@@ -62,4 +62,33 @@ if ($index_data) {
     <div style="border: 1px solid #ccc; padding: 15px; background: #f9f9f9; border-radius: 8px;">
 
         <h3><?= ripristina_accenti($dati['nome'] ?? '[nome non presente]') ?></h3>
-        <p><strong>Edizione:</strong> <?= $d
+        <p><strong>Edizione:</strong> <?= $dati['edizione'] ?? '-' ?> | <strong>Fonte:</strong> <?= $dati['fonte'] ?? '-' ?></p>
+
+        <?php if (!empty($dati['tratti'])): ?>
+            <h4>Tratti</h4>
+            <ul>
+                <?php foreach ($dati['tratti'] as $k => $v): ?>
+                    <li><strong><?= ucfirst($k) ?>:</strong> <?= is_array($v) ? json_encode($v, JSON_UNESCAPED_UNICODE) : ripristina_accenti($v) ?></li>
+                <?php endforeach; ?>
+            </ul>
+        <?php endif; ?>
+
+        <?php if (!empty($dati['sottorazze'])): ?>
+            <h4>Sottorazze</h4>
+            <ul>
+                <?php foreach ($dati['sottorazze'] as $sr): ?>
+                    <li><strong><?= ripristina_accenti($sr['nome'] ?? 'Senza nome') ?>:</strong>
+                        <pre><?= htmlspecialchars(json_encode($sr, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)) ?></pre>
+                    </li>
+                <?php endforeach; ?>
+            </ul>
+        <?php endif; ?>
+    </div>
+
+    <details>
+        <summary>📦 JSON completo</summary>
+        <pre><?= htmlspecialchars(json_encode($dati, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE)) ?></pre>
+    </details>
+<?php endif; ?>
+
+<?php include 'includes/footer.php'; ?>
