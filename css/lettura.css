@@ -1,10 +1,15 @@
+/* File: style/lettura.css */
+
 body {
   font-family: 'Segoe UI', sans-serif;
-  background: #f3f4f7;
+  background-color: #f7f7fa;
+  color: #333;
+  margin: 0;
+  padding: 20px;
 }
 
-.titolo {
-  color: #333;
+h1.titolo {
+  font-size: 28px;
   margin-bottom: 20px;
 }
 
@@ -13,62 +18,81 @@ body {
   margin-bottom: 20px;
 }
 
-.barra-ricerca input {
-  padding: 6px;
-  width: 250px;
+select,
+input[type="text"] {
+  padding: 6px 10px;
   border: 1px solid #ccc;
   border-radius: 4px;
+  font-size: 16px;
+  width: 250px;
 }
 
 .btn-ricerca,
 .btn-conferma {
-  background: #3cc160;
+  padding: 6px 12px;
+  font-size: 16px;
+  background-color: #4CAF50;
   color: white;
   border: none;
-  padding: 6px 12px;
-  border-radius: 5px;
+  border-radius: 4px;
   cursor: pointer;
-  font-weight: bold;
-  transition: background 0.2s;
+  margin-left: 10px;
 }
 
 .btn-ricerca:hover,
 .btn-conferma:hover {
-  background: #35a852;
+  background-color: #45a049;
 }
 
 .popup-categoria {
-  display: none;
-  position: relative;
-  background: #fff;
-  border: 1px solid #ccc;
-  padding: 10px;
-  z-index: 100;
-  margin-bottom: 20px;
-  max-height: 300px;
-  overflow-y: auto;
-  border-radius: 8px;
+  box-shadow: 0px 4px 8px rgba(0,0,0,0.1);
+  width: 400px;
+}
+
+.popup-categoria label {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.popup-categoria label input {
+  margin-right: 8px;
+}
+
+#contenutoJSON {
+  margin-top: 20px;
 }
 
 .box {
   border: 1px solid #ccc;
+  background: #fff;
   padding: 15px;
   border-radius: 8px;
-  background: #ffffff;
-  margin-bottom: 40px;
-  box-shadow: 0px 2px 4px rgba(0,0,0,0.1);
+  margin-bottom: 20px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
 }
 
 .titolo-voce {
-  color: #226;
+  font-size: 20px;
   margin-bottom: 10px;
 }
 
 .separatore {
-  margin: 40px 0;
-  border-top: 2px dashed #aaa;
+  border-top: 2px dashed #ccc;
+  margin: 30px 0;
 }
 
-input[type="checkbox"] {
-  margin-right: 6px;
+pre {
+  background-color: #f0f0f0;
+  padding: 10px;
+  border-radius: 5px;
+  overflow-x: auto;
+  font-family: Consolas, monospace;
+}
+
+@media (max-width: 600px) {
+  .popup-categoria, select, input[type="text"] {
+    width: 100%;
+  }
 }
