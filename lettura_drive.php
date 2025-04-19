@@ -1,4 +1,4 @@
-<?php include_once 'utils.php'; ?> 
+<?php include_once 'utils.php'; ?>
 <?php include 'includes/header.php'; ?>
 
 <h1 class="titolo">Visualizza contenuti da Google Drive</h1>
@@ -20,7 +20,7 @@
 </div>
 
 <!-- Popup dinamico con elenco cliccabile -->
-<div id="popupVociCategoria" class="popup-categoria" style="display: none; position: absolute; top: 120px; left: 50px; background: #fff; border: 1px solid #ccc; padding: 15px; border-radius: 8px; z-index: 1000; max-height: 400px; overflow-y: auto;">
+<div id="popupVociCategoria" class="popup-categoria" style="display: none; position: absolute; background: #fff; border: 1px solid #ccc; padding: 10px; border-radius: 8px; z-index: 1000; max-height: 400px; overflow-y: auto;">
   <strong>Seleziona voce:</strong>
   <div id="listaVociCategoria"></div>
   <button onclick="confermaSelezioneVoce()" class="btn-conferma">✔️ Conferma selezione</button>
@@ -81,8 +81,8 @@ async function mostraPopupVociCategoria() {
     `<span onclick="caricaContenutoSingolo('${voce.nome}')" style="cursor:pointer; text-decoration:underline;">${voce.nome}</span></label><br>`
   ).join("");
 
-  popup.style.display = "block";
   popupAperto = true;
+  popup.style.display = "block";
 }
 
 function confermaSelezioneVoce() {
