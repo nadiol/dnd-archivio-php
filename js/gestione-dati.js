@@ -1,4 +1,4 @@
-// Script gestione-dati.js migliorato con parsing completo per sottorazze e tratti dettagliati + layout ordinato
+// Script gestione-dati.js migliorato con parsing completo per sottorazze e tratti dettagliati
 
 function analizzaTesto() {
   const tipo = document.getElementById("tipoDato").value;
@@ -103,14 +103,16 @@ function mostraEditor(dati) {
 
   const createField = (key, value, prefix = '') => {
     const wrapper = document.createElement("div");
-    wrapper.className = "campo-input";
+    wrapper.style.marginBottom = "1em";
     const label = document.createElement("label");
     label.textContent = prefix + key;
-    label.className = "etichetta";
+    label.style.fontWeight = "bold";
+    label.style.display = "block";
     const input = document.createElement("input");
     input.name = prefix + key;
     input.value = value;
-    input.className = "campo-testo";
+    input.style.width = '100%';
+    input.style.marginTop = '0.25em';
     input.addEventListener('input', aggiornaAnteprima);
     wrapper.appendChild(label);
     wrapper.appendChild(input);
@@ -121,12 +123,30 @@ function mostraEditor(dati) {
     const value = dati[key];
 
     if (typeof value === 'object' && !Array.isArray(value)) {
+      const fieldset = document.createElement("fieldset");
+      fieldset.style.margin = "1em 0";
+      fieldset.style.padding = "1em";
+      fieldset.style.border = "1px solid #ccc";
+      const legend = document.createElement("legend");
+      legend.textContent = key;
+      legend.style.fontWeight = "bold";
+      fieldset.appendChild(legend);
+
       for (const sub in value) {
         createField(sub, value[sub], `${key}.`);
       }
+      container.appendChild(fieldset);
     } else if (Array.isArray(value)) {
       if (key === 'sottorazze') {
         value.forEach((sotto, index) => {
+          const fieldset = document.createElement("fieldset");
+          fieldset.style.margin = "1em 0";
+          fieldset.style.padding = "1em";
+          fieldset.style.border = "1px dashed #999";
+          const legend = document.createElement("legend");
+          legend.textContent = `Sottorazza ${index + 1}`;
+          legend.style.fontWeight = "bold";
+          fieldset.appendChild(legend);
           for (const subkey in sotto) {
             if (typeof sotto[subkey] === 'object') {
               for (const k in sotto[subkey]) {
@@ -136,6 +156,7 @@ function mostraEditor(dati) {
               createField(subkey, sotto[subkey], `sottorazze[${index}].`);
             }
           }
+          container.appendChild(fieldset);
         });
       } else {
         createField(key, value.join(', '));
