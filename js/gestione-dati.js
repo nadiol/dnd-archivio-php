@@ -115,7 +115,6 @@ function analizzaTesto() {
       return;
     }
 
-    // Parsing caratteristiche
     if (currentBlock === 'caratteristiche') {
       if (/Costituzione.*\d/.test(line)) {
         const match = line.match(/Costituzione.*?\b(\d+)/);
@@ -136,4 +135,83 @@ function analizzaTesto() {
   aggiornaAnteprima();
 }
 
-// [Funzioni mostraEditor, aggiornaAnteprima, salvaJsonFinale identiche]
+function mostraEditor(dati) {
+  const container = document.getElementById("outputEditor");
+  container.innerHTML = '';
+  window.currentData = dati;
+  for (const key in dati) {
+    const value = dati[key];
+    if (typeof value === 'object' && !Array.isArray(value)) {
+      const fieldset = document.createElement("fieldset");
+      const legend = document.createElement("legend");
+      legend.textContent = key;
+      fieldset.appendChild(legend);
+      for (const sub in value) {
+        const label = document.createElement("label");
+        label.textContent = sub;
+        const input = document.createElement("input");
+        input.name = `${key}.${sub}`;
+        input.value = value[sub];
+        input.style.width = '100%';
+        input.addEventListener('input', aggiornaAnteprima);
+        fieldset.appendChild(label);
+        fieldset.appendChild(document.createElement("br"));
+        fieldset.appendChild(input);
+        fieldset.appendChild(document.createElement("br"));
+      }
+      container.appendChild(fieldset);
+    } else if (Array.isArray(value)) {
+      const label = document.createElement("label");
+      label.textContent = key;
+      const input = document.createElement("input");
+      input.name = key;
+      input.value = value.join(', ');
+      input.style.width = '100%';
+      input.addEventListener('input', aggiornaAnteprima);
+      container.appendChild(label);
+      container.appendChild(document.createElement("br"));
+      container.appendChild(input);
+      container.appendChild(document.createElement("br"));
+    } else {
+      const label = document.createElement("label");
+      label.textContent = key;
+      const input = document.createElement("input");
+      input.name = key;
+      input.value = value;
+      input.style.width = '100%';
+      input.addEventListener('input', aggiornaAnteprima);
+      container.appendChild(label);
+      container.appendChild(document.createElement("br"));
+      container.appendChild(input);
+      container.appendChild(document.createElement("br"));
+    }
+  }
+  document.getElementById("salvaBtn").classList.remove("hidden");
+}
+
+function aggiornaAnteprima() {
+  const inputs = document.querySelectorAll("#outputEditor input");
+  const dati = window.currentData;
+  inputs.forEach(input => {
+    const [group, subkey] = input.name.split('.');
+    if (subkey) {
+      if (dati[group] && typeof dati[group] === 'object') {
+        dati[group][subkey] = input.value;
+      }
+    } else if (Array.isArray(dati[input.name])) {
+      dati[input.name] = input.value.split(',').map(v => v.trim());
+    } else {
+      dati[input.name] = input.value;
+    }
+  });
+  const output = JSON.stringify(dati, null, 2);
+  document.getElementById("anteprimaJson").textContent = output;
+}
+
+function salvaJsonFinale() {
+  const blob = new Blob([document.getElementById("anteprimaJson").textContent], { type: "application/json" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = "scheda_dnd.json";
+  link.click();
+}
