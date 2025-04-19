@@ -1,5 +1,4 @@
-
-// Script gestione-dati.js
+// Script gestione-dati.js migliorato con parsing, anteprima live e download JSON
 
 function analizzaTesto() {
   const tipo = document.getElementById("tipoDato").value;
@@ -30,6 +29,7 @@ function analizzaTesto() {
       };
       return;
     }
+
     if (/incremento dei punteggi/i.test(line)) currentBlock = 'caratteristiche';
     else if (/allineamento/i.test(line)) currentBlock = 'allineamento';
     else if (/età/i.test(line)) currentBlock = 'età';
@@ -41,7 +41,7 @@ function analizzaTesto() {
     else if (/strumenti/i.test(line)) currentBlock = 'strumenti';
     else if (/minatore/i.test(line)) currentBlock = 'minatore';
     else if (/linguaggi/i.test(line)) currentBlock = 'lingue';
-    else if (/robustezza nanica/i.test(line)) currentBlock = 'robustezza';
+    else if (/robustezza/i.test(line)) currentBlock = 'robustezza';
 
     switch (currentBlock) {
       case 'caratteristiche':
@@ -72,6 +72,7 @@ function analizzaTesto() {
 
   if (sottorazza) output.sottorazze.push(sottorazza);
   mostraEditor(output);
+  aggiornaAnteprima();
 }
 
 function aggiungiTratto(nome, descrizione) {
@@ -98,6 +99,7 @@ function mostraEditor(dati) {
         input.name = `${key}.${sub}`;
         input.value = dati[key][sub];
         input.style.width = '100%';
+        input.addEventListener('input', aggiornaAnteprima);
         fieldset.appendChild(label);
         fieldset.appendChild(document.createElement("br"));
         fieldset.appendChild(input);
@@ -111,6 +113,7 @@ function mostraEditor(dati) {
       input.name = key;
       input.value = dati[key].join(', ');
       input.style.width = '100%';
+      input.addEventListener('input', aggiornaAnteprima);
       container.appendChild(label);
       container.appendChild(document.createElement("br"));
       container.appendChild(input);
@@ -122,6 +125,7 @@ function mostraEditor(dati) {
       input.name = key;
       input.value = dati[key];
       input.style.width = '100%';
+      input.addEventListener('input', aggiornaAnteprima);
       container.appendChild(label);
       container.appendChild(document.createElement("br"));
       container.appendChild(input);
@@ -131,7 +135,7 @@ function mostraEditor(dati) {
   document.getElementById("salvaBtn").classList.remove("hidden");
 }
 
-function salvaJsonFinale() {
+function aggiornaAnteprima() {
   const inputs = document.querySelectorAll("#outputEditor input");
   const dati = window.currentData;
   inputs.forEach(input => {
@@ -148,4 +152,12 @@ function salvaJsonFinale() {
   });
   const output = JSON.stringify(dati, null, 2);
   document.getElementById("anteprimaJson").textContent = output;
+}
+
+function salvaJsonFinale() {
+  const blob = new Blob([document.getElementById("anteprimaJson").textContent], { type: "application/json" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = "scheda_dnd.json";
+  link.click();
 }
