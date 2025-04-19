@@ -84,10 +84,24 @@ if ($index_data) {
             return ucfirst(str_replace('_', ' ', $chiave));
         }
 
+        function badge_categoria($chiave) {
+            $map = [
+                'linguaggi' => 'linguaggio',
+                'velocità' => 'movimento',
+                'incremento punteggi caratteristica' => 'punteggio',
+                'taglia' => 'taglia',
+                'abilità' => 'abilita',
+                'allineamento' => 'generale'
+            ];
+            $k = strtolower(str_replace('_', ' ', $chiave));
+            $tipo = $map[$k] ?? 'generale';
+            return "<span class='badge badge-$tipo'>" . ucfirst($tipo) . "</span>";
+        }
+
         function stampa_tratti($tratti) {
-            echo "<ul>";
+            echo "<div class='tratti-categoria'>";
             foreach ($tratti as $k => $v) {
-                echo "<li><strong>" . etichetta($k) . ":</strong><br>";
+                echo "<div><strong>" . badge_categoria($k) . " " . etichetta($k) . ":</strong><br>";
                 if (is_array($v)) {
                     foreach ($v as $subk => $subv) {
                         echo "• <em>" . etichetta($subk) . ":</em> " . (is_array($subv) ? json_encode($subv, JSON_UNESCAPED_UNICODE) : ripristina_accenti($subv)) . "<br>";
@@ -95,9 +109,9 @@ if ($index_data) {
                 } else {
                     echo ripristina_accenti($v);
                 }
-                echo "</li>";
+                echo "</div><br>";
             }
-            echo "</ul>";
+            echo "</div>";
         }
 
         if (isset($dati['nome']) || isset($dati['tratti'])) {
@@ -117,6 +131,8 @@ if ($index_data) {
                     if (!empty($sr['tratti'])) {
                         echo "<h5>Tratti</h5>";
                         stampa_tratti($sr['tratti']);
+                    } else {
+                        echo "<p><em>Nessun tratto specificato.</em></p>";
                     }
                     if (!empty($sr['descrizione'])) {
                         echo "<p>" . ripristina_accenti($sr['descrizione']) . "</p>";
@@ -150,6 +166,21 @@ if ($index_data) {
         background: #f9f9f9;
         margin-bottom: 20px;
     }
+    .badge {
+        display: inline-block;
+        padding: 2px 8px;
+        font-size: 0.75em;
+        font-weight: bold;
+        border-radius: 10px;
+        color: white;
+        margin-right: 6px;
+    }
+    .badge-abilita     { background-color: #4CAF50; }
+    .badge-linguaggio  { background-color: #2196F3; }
+    .badge-movimento   { background-color: #FF9800; }
+    .badge-punteggio   { background-color: #9C27B0; }
+    .badge-taglia      { background-color: #795548; }
+    .badge-generale    { background-color: #607D8B; }
 </style>
 <script>
 function filtraContenuto() {
