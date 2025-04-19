@@ -27,12 +27,12 @@ if (!$json_raw) {
 }
 
 $scelto = $_GET['file'] ?? '';
-$dati = [];
+$dati = null;
 $map_file_id = [];
 
 if ($index_data) {
     foreach ($index_data as $entry) {
-        $map_file_id[$entry['nome']] = $entry['id'];
+        $map_file_id[$entry['file']] = $entry['file'];
     }
 
     if ($scelto && isset($map_file_id[$scelto])) {
@@ -59,14 +59,7 @@ if ($index_data) {
 
 <?php if (!empty($dati)): ?>
     <h2 style="font-family: sans-serif;">Contenuto di <?= htmlspecialchars($scelto) ?></h2>
-    <div style="display: flex; flex-wrap: wrap; gap: 20px;">
-    <?php foreach ((array)$dati as $entry): ?>
-        <div style="border: 1px solid #ccc; padding: 15px; border-radius: 8px; width: 300px; background: #f9f9f9;">
-            <h3><?= ripristina_accenti($entry['nome'] ?? '---') ?></h3>
-            <p><?= ripristina_accenti($entry['descrizione'] ?? '') ?></p>
-        </div>
-    <?php endforeach; ?>
-    </div>
-<?php endif; ?>
+    <div style="border: 1px solid #ccc; padding: 15px; background: #f9f9f9; border-radius: 8px;">
 
-<?php include 'includes/footer.php'; ?>
+        <h3><?= ripristina_accenti($dati['nome'] ?? '[nome non presente]') ?></h3>
+        <p><strong>Edizione:</strong> <?= $d
