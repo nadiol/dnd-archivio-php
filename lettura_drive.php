@@ -20,7 +20,7 @@
 </div>
 
 <!-- Popup dinamico con elenco cliccabile -->
-<div id="popupVociCategoria" class="popup-categoria">
+<div id="popupVociCategoria" class="popup-categoria" style="display: none; position: absolute; top: 120px; left: 50px; background: #fff; border: 1px solid #ccc; padding: 15px; border-radius: 8px; z-index: 1000; max-height: 400px; overflow-y: auto;">
   <strong>Seleziona voce:</strong>
   <div id="listaVociCategoria"></div>
   <button onclick="confermaSelezioneVoce()" class="btn-conferma">✔️ Conferma selezione</button>
@@ -46,7 +46,21 @@ const vociPerCategoria = {
   competenze: [],
   meccaniche_gioco: []
 };
-let driveIndex = [];
+let idMap = {};
+let popupAperto = false;
+
+window.addEventListener("click", function(event) {
+  const popup = document.getElementById("popupVociCategoria");
+  const select = document.getElementById("selezionaCategoria");
+  if (popupAperto && !popup.contains(event.target) && event.target !== select) {
+    popup.style.display = "none";
+    popupAperto = false;
+    const selezionate = Array.from(document.querySelectorAll('.voce-selezionata:checked')).map(cb => cb.value);
+    if (selezionate.length > 0) {
+      mostraContenutiMultipli(selezionate);
+    }
+  }
+});
 
 async function mostraPopupVociCategoria() {
   const categoria = document.getElementById("selezionaCategoria").value;
@@ -61,40 +75,48 @@ async function mostraPopupVociCategoria() {
   if (vociPerCategoria[categoria].length === 0) {
     const indexId = await getIdForIndex(categoria);
     const response = await fetch(`https://drive.google.com/uc?export=download&id=${indexId}`);
-    vociPerCategoria[categoria] = await response.json();
+    const json = await response.json();
+    vociPerCategoria[categoria] = json;
+    json.forEach(el => idMap[el.nome] = el.id);
   }
 
   const elenco = vociPerCategoria[categoria];
   lista.innerHTML = elenco.map(voce =>
-    `<label><input type="checkbox" class="voce-selezionata" value="${voce.nome}"> ${voce.nome}</label><br>`
+    `<label><input type="checkbox" class="voce-selezionata" value="${voce.nome}"> <span onclick="caricaContenutoSingolo('${voce.nome}')" style="cursor:pointer; text-decoration:underline;">${voce.nome}</span></label><br>`
   ).join("");
 
   popup.style.display = "block";
+  popupAperto = true;
 }
 
 function confermaSelezioneVoce() {
-  const categoria = document.getElementById("selezionaCategoria").value;
   const selezionate = Array.from(document.querySelectorAll('.voce-selezionata:checked')).map(cb => cb.value);
   if (selezionate.length > 0) {
     document.getElementById("popupVociCategoria").style.display = "none";
-    mostraContenutiMultipli(selezionate, categoria);
+    popupAperto = false;
+    mostraContenutiMultipli(selezionate);
   }
 }
 
-async function mostraContenutiMultipli(voci, categoria) {
+async function mostraContenutiMultipli(voci) {
   const contenitore = document.getElementById("contenutoJSON");
-  contenitore.innerHTML = "<p>Caricamento dati...</p>";
-  const indexId = await getIdForIndex(categoria);
-  const response = await fetch(`https://drive.google.com/uc?export=download&id=${indexId}`);
-  const index = await response.json();
-  const contenuti = await Promise.all(voci.map(async voce => {
-    const voceEntry = index.find(e => e.nome === voce);
-    if (!voceEntry) return `<div class='box'><h2>${voce}</h2><p>⚠️ File non trovato</p></div>`;
-    const res = await fetch(`https://drive.google.com/uc?export=download&id=${voceEntry.id}`);
-    const data = await res.json();
-    return `<div class='box'><h2 class='titolo-voce'>${voce}</h2><pre>${JSON.stringify(data, null, 2)}</pre></div>`;
+  contenitore.innerHTML = "Caricamento...";
+  const blocchi = await Promise.all(voci.map(async (voce) => {
+    const id = idMap[voce];
+    const res = await fetch(`https://drive.google.com/uc?export=download&id=${id}`);
+    const json = await res.json();
+    return `<div class="box"><h2 class="titolo-voce">${voce}</h2><pre>${JSON.stringify(json, null, 2)}</pre></div>`;
   }));
-  contenitore.innerHTML = contenuti.join('<div class="separatore"></div>');
+  contenitore.innerHTML = blocchi.join('<div class="separatore"></div>');
+}
+
+async function caricaContenutoSingolo(voce) {
+  if (!idMap[voce]) return;
+  const contenitore = document.getElementById("contenutoJSON");
+  contenitore.innerHTML = "Caricamento...";
+  const res = await fetch(`https://drive.google.com/uc?export=download&id=${idMap[voce]}`);
+  const json = await res.json();
+  contenitore.innerHTML = `<div class="box"><h2 class="titolo-voce">${voce}</h2><pre>${JSON.stringify(json, null, 2)}</pre></div>`;
 }
 
 function filtraContenuto() {
@@ -107,11 +129,9 @@ function filtraContenuto() {
 }
 
 async function getIdForIndex(categoria) {
-  if (driveIndex.length === 0) {
-    const res = await fetch(`https://drive.google.com/uc?export=download&id=${driveIndexFileId}`);
-    driveIndex = await res.json();
-  }
-  const file = driveIndex.find(e => e.nome === `${categoria}_index.json` || e.nome === `${categoria}/${categoria}_index.json`);
+  const res = await fetch(`https://drive.google.com/uc?export=download&id=${driveIndexFileId}`);
+  const json = await res.json();
+  const file = json.find(e => e.nome === `${categoria}_index.json` || e.nome === `${categoria}/${categoria}_index.json`);
   return file?.id;
 }
 </script>
