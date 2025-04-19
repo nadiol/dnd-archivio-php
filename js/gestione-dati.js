@@ -1,13 +1,8 @@
-// Script gestione-dati.js con parsing AI (via API OpenAI opzionale in futuro)
+// Script gestione-dati.js migliorato con parsing completo per sottorazze e tratti dettagliati
 
 function analizzaTesto() {
   const tipo = document.getElementById("tipoDato").value;
   const input = document.getElementById("inputGenerico").value;
-
-  if (document.getElementById("usaAI")?.checked) {
-    alert("Parsing AI non ancora attivo in questa versione. Verrà integrato prossimamente.");
-    return;
-  }
 
   const lines = input.split('\n').map(l => l.trim()).filter(l => l);
   const output = {
@@ -34,7 +29,7 @@ function analizzaTesto() {
       if (lingue) output.lingue = [...new Set([...output.lingue, ...lingue])];
     } else if (["allineamento", "età", "taglia", "velocità_m"].includes(currentBlock)) {
       output[currentBlock] = text;
-    } else {
+    } else if (currentBlock) {
       const key = currentBlock.charAt(0).toUpperCase() + currentBlock.slice(1);
       target[key] = text;
     }
@@ -59,18 +54,28 @@ function analizzaTesto() {
       return;
     }
 
-    if (/^Incremento dei punteggi/i.test(line)) { flushBuffer(); currentBlock = 'incremento'; return; }
-    if (/^Allineamento/i.test(line)) { flushBuffer(); currentBlock = 'allineamento'; return; }
-    if (/^Età/i.test(line)) { flushBuffer(); currentBlock = 'età'; return; }
-    if (/^Taglia/i.test(line)) { flushBuffer(); currentBlock = 'taglia'; return; }
-    if (/^Velocità/i.test(line)) { flushBuffer(); currentBlock = 'velocità_m'; return; }
-    if (/^Scurovisione/i.test(line)) { flushBuffer(); currentBlock = 'scurovisione'; return; }
-    if (/^Resilienza/i.test(line)) { flushBuffer(); currentBlock = 'resilienza nanica'; return; }
-    if (/^Addestramento da combattimento/i.test(line)) { flushBuffer(); currentBlock = 'addestramento da combattimento'; return; }
-    if (/^Competenza negli strumenti/i.test(line)) { flushBuffer(); currentBlock = 'competenza negli strumenti'; return; }
-    if (/^Esperto minatore/i.test(line)) { flushBuffer(); currentBlock = 'esperto minatore'; return; }
-    if (/^Linguaggi/i.test(line)) { flushBuffer(); currentBlock = 'lingue'; return; }
-    if (/^Robustezza/i.test(line)) { flushBuffer(); currentBlock = 'robustezza'; return; }
+    const keywordMap = {
+      'Incremento dei punteggi': 'incremento',
+      'Allineamento': 'allineamento',
+      'Età': 'età',
+      'Taglia': 'taglia',
+      'Velocità': 'velocità_m',
+      'Scurovisione': 'scurovisione',
+      'Resilienza': 'resilienza nanica',
+      'Addestramento da combattimento': 'addestramento da combattimento',
+      'Competenza negli strumenti': 'competenza negli strumenti',
+      'Esperto minatore': 'esperto minatore',
+      'Linguaggi': 'lingue',
+      'Robustezza': 'robustezza'
+    };
+
+    for (const k in keywordMap) {
+      if (line.startsWith(k)) {
+        flushBuffer();
+        currentBlock = keywordMap[k];
+        return;
+      }
+    }
 
     if (currentBlock === 'incremento') {
       if (/Costituzione.*\d/.test(line)) {
@@ -87,7 +92,6 @@ function analizzaTesto() {
 
   flushBuffer();
   if (sottorazza) output.sottorazze.push(sottorazza);
-
   mostraEditor(output);
   aggiornaAnteprima();
 }
