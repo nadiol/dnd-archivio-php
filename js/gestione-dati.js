@@ -1,4 +1,4 @@
-// Script gestione-dati.js migliorato con parsing, anteprima live e download JSON
+// Script gestione-dati.js aggiornato con parsing sottorazze, anteprima live e salvataggio
 
 function analizzaTesto() {
   const tipo = document.getElementById("tipoDato").value;
@@ -16,11 +16,11 @@ function analizzaTesto() {
   let sottorazza = null;
 
   lines.forEach(line => {
-    if (/^Nano(\s+|$)/i.test(line)) {
+    if (/^Nano\s*$/i.test(line)) {
       if (!output.nome) output.nome = line.trim();
       return;
     }
-    if (/^Nano delle/i.test(line)) {
+    if (/^Nano delle\s+/i.test(line)) {
       if (sottorazza) output.sottorazze.push(sottorazza);
       sottorazza = {
         nome: line.trim(),
@@ -57,11 +57,11 @@ function analizzaTesto() {
       case 'età': output.età = line; break;
       case 'taglia': output.taglia = line; break;
       case 'velocità': output.velocità_m = 7.5; break;
-      case 'scurovisione': aggiungiTratto("Scurovisione", line); break;
-      case 'resilienza': aggiungiTratto("Resilienza nanica", line); break;
-      case 'addestramento': aggiungiTratto("Addestramento da combattimento", line); break;
-      case 'strumenti': aggiungiTratto("Competenza negli strumenti", line); break;
-      case 'minatore': aggiungiTratto("Esperto minatore", line); break;
+      case 'scurovisione': aggiungiTrattoGenerico("Scurovisione", line, sottorazza, output); break;
+      case 'resilienza': aggiungiTrattoGenerico("Resilienza nanica", line, sottorazza, output); break;
+      case 'addestramento': aggiungiTrattoGenerico("Addestramento da combattimento", line, sottorazza, output); break;
+      case 'strumenti': aggiungiTrattoGenerico("Competenza negli strumenti", line, sottorazza, output); break;
+      case 'minatore': aggiungiTrattoGenerico("Esperto minatore", line, sottorazza, output); break;
       case 'robustezza': if (sottorazza) sottorazza.tratti["Robustezza nanica"] = line; break;
       case 'lingue':
         const lingue = line.match(/Comune|Nanico|Elfico|Draconico/gi);
@@ -75,11 +75,12 @@ function analizzaTesto() {
   aggiornaAnteprima();
 }
 
-function aggiungiTratto(nome, descrizione) {
-  const container = window.currentData || {};
-  container.tratti = container.tratti || {};
-  container.tratti[nome] = descrizione;
-  window.currentData = container;
+function aggiungiTrattoGenerico(nome, descrizione, sottorazza, output) {
+  if (sottorazza) {
+    sottorazza.tratti[nome] = descrizione;
+  } else {
+    output.tratti[nome] = descrizione;
+  }
 }
 
 function mostraEditor(dati) {
