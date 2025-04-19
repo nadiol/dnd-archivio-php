@@ -1,0 +1,74 @@
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: #f3f4f7;
+}
+
+.titolo {
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.selettore-categoria,
+.barra-ricerca {
+  margin-bottom: 20px;
+}
+
+.barra-ricerca input {
+  padding: 6px;
+  width: 250px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.btn-ricerca,
+.btn-conferma {
+  background: #3cc160;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.2s;
+}
+
+.btn-ricerca:hover,
+.btn-conferma:hover {
+  background: #35a852;
+}
+
+.popup-categoria {
+  display: none;
+  position: relative;
+  background: #fff;
+  border: 1px solid #ccc;
+  padding: 10px;
+  z-index: 100;
+  margin-bottom: 20px;
+  max-height: 300px;
+  overflow-y: auto;
+  border-radius: 8px;
+}
+
+.box {
+  border: 1px solid #ccc;
+  padding: 15px;
+  border-radius: 8px;
+  background: #ffffff;
+  margin-bottom: 40px;
+  box-shadow: 0px 2px 4px rgba(0,0,0,0.1);
+}
+
+.titolo-voce {
+  color: #226;
+  margin-bottom: 10px;
+}
+
+.separatore {
+  margin: 40px 0;
+  border-top: 2px dashed #aaa;
+}
+
+input[type="checkbox"] {
+  margin-right: 6px;
+}
