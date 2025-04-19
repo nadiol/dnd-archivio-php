@@ -2,8 +2,18 @@
 include_once 'utils.php';
 include 'includes/header.php'; 
 
-$index_url = "https://drive.google.com/uc?export=download&id=14QzWfVXu-MPlq0YxTCXJ-NV356hdXU1T";
-$json_raw = @file_get_contents($index_url);
+function scarica_da_drive($id) {
+    $url = "https://drive.google.com/uc?export=download&id=" . $id;
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+    curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+    $output = curl_exec($ch);
+    curl_close($ch);
+    return $output;
+}
+
+$json_raw = scarica_da_drive("14QzWfVXu-MPlq0YxTCXJ-NV356hdXU1T");
 
 $index_data = null;
 if (!$json_raw) {
@@ -26,9 +36,7 @@ if ($index_data) {
     }
 
     if ($scelto && isset($map_file_id[$scelto])) {
-        $id = $map_file_id[$scelto];
-        $url = "https://drive.google.com/uc?export=download&id=$id";
-        $json = file_get_contents($url);
+        $json = scarica_da_drive($map_file_id[$scelto]);
         if ($json) {
             $dati = json_decode($json, true);
         }
