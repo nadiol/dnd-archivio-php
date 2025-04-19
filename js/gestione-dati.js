@@ -190,11 +190,14 @@ function aggiornaAnteprima() {
 }
 
 function salvaJsonFinale() {
-  const blob = new Blob([
-    document.getElementById("anteprimaJson").textContent
-  ], { type: "application/json" });
+  const jsonText = document.getElementById("anteprimaJson").textContent;
+  const dati = JSON.parse(jsonText);
+  const nomeRazza = (dati.nome || "razza_dnd").toLowerCase().replace(/\s+/g, "_");
+
+  const blob = new Blob([jsonText], { type: "application/json" });
   const link = document.createElement("a");
   link.href = URL.createObjectURL(blob);
-  link.download = "razza_dnd.json";
+  link.download = `razza_${nomeRazza}.json`;
   link.click();
 }
+
