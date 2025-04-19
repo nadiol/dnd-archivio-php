@@ -1,4 +1,16 @@
-body { font-family: Arial; background: #f8f8f8; padding: 20px; }
-textarea { width: 100%; }
-.hidden { display: none; }
-pre { background: #eee; padding: 10px; }
+body {
+  font-family: Arial, sans-serif;
+  padding: 2rem;
+}
+textarea {
+  width: 100%;
+  margin-bottom: 1rem;
+}
+.hidden {
+  display: none;
+}
+fieldset {
+  border: 1px solid #aaa;
+  margin-bottom: 1rem;
+  padding: 1rem;
+}
