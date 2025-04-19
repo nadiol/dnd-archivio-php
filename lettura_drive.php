@@ -10,6 +10,7 @@
 <?php include 'includes/header.php'; ?>
 
 <h1 class="titolo">Visualizza contenuti da Google Drive</h1>
+<script src="js/lettura_drive.js"></script>
 
 <!-- Menu a tendina per categorie -->
 <div class="selettore-categoria">
