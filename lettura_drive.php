@@ -1,4 +1,4 @@
-<?php include_once 'utils.php'; ?>
+<?php include_once 'utils.php'; ?> 
 <?php include 'includes/header.php'; ?>
 
 <h1 class="titolo">Visualizza contenuti da Google Drive</h1>
@@ -15,6 +15,7 @@
     <option value="oggetti">Oggetti</option>
     <option value="talenti">Talenti</option>
     <option value="competenze">Competenze</option>
+    <option value="meccaniche_gioco">Meccaniche di Gioco</option>
   </select>
 </div>
 
@@ -34,7 +35,7 @@
 <div id="contenutoJSON"></div>
 
 <script>
-const driveIndexFile = "drive_index.json";
+const driveIndexFileId = "1_FqDS1q3XmOHeJf46TtqGWgGq69IQik2";
 const vociPerCategoria = {
   razze: [],
   classi: [],
@@ -42,8 +43,10 @@ const vociPerCategoria = {
   incantesimi: [],
   oggetti: [],
   talenti: [],
-  competenze: []
+  competenze: [],
+  meccaniche_gioco: []
 };
+let driveIndex = [];
 
 async function mostraPopupVociCategoria() {
   const categoria = document.getElementById("selezionaCategoria").value;
@@ -56,40 +59,42 @@ async function mostraPopupVociCategoria() {
   }
 
   if (vociPerCategoria[categoria].length === 0) {
-    const response = await fetch(`https://drive.google.com/uc?export=download&id=${await getIdForIndex(categoria)}`);
+    const indexId = await getIdForIndex(categoria);
+    const response = await fetch(`https://drive.google.com/uc?export=download&id=${indexId}`);
     vociPerCategoria[categoria] = await response.json();
   }
 
   const elenco = vociPerCategoria[categoria];
-  if (categoria === "sottoclassi") {
-    lista.innerHTML = elenco.map(voce =>
-      `<details><summary><strong>${voce.nome}</strong> (${voce.classe})</summary>` +
-      `<p>${voce.descrizione}</p><ul>` +
-      Object.entries(voce.tratti).map(([k,v]) => `<li><strong>${k}:</strong> ${v}</li>`).join("") +
-      `</ul></details><hr>`
-    ).join("");
-  } else {
-    lista.innerHTML = elenco.map(voce =>
-      `<label><input type="checkbox" class="voce-selezionata" value="${voce}"> ${voce}</label><br>`
-    ).join("");
-  }
+  lista.innerHTML = elenco.map(voce =>
+    `<label><input type="checkbox" class="voce-selezionata" value="${voce.nome}"> ${voce.nome}</label><br>`
+  ).join("");
 
   popup.style.display = "block";
 }
 
 function confermaSelezioneVoce() {
+  const categoria = document.getElementById("selezionaCategoria").value;
   const selezionate = Array.from(document.querySelectorAll('.voce-selezionata:checked')).map(cb => cb.value);
   if (selezionate.length > 0) {
     document.getElementById("popupVociCategoria").style.display = "none";
-    mostraContenutiMultipli(selezionate);
+    mostraContenutiMultipli(selezionate, categoria);
   }
 }
 
-function mostraContenutiMultipli(voci) {
+async function mostraContenutiMultipli(voci, categoria) {
   const contenitore = document.getElementById("contenutoJSON");
-  contenitore.innerHTML = voci.map(voce =>
-    `<div class="box"><h2 class="titolo-voce">${voce}</h2><p>Dati caricati da JSON (placeholder)...</p></div>`
-  ).join('<div class="separatore"></div>');
+  contenitore.innerHTML = "<p>Caricamento dati...</p>";
+  const indexId = await getIdForIndex(categoria);
+  const response = await fetch(`https://drive.google.com/uc?export=download&id=${indexId}`);
+  const index = await response.json();
+  const contenuti = await Promise.all(voci.map(async voce => {
+    const voceEntry = index.find(e => e.nome === voce);
+    if (!voceEntry) return `<div class='box'><h2>${voce}</h2><p>⚠️ File non trovato</p></div>`;
+    const res = await fetch(`https://drive.google.com/uc?export=download&id=${voceEntry.id}`);
+    const data = await res.json();
+    return `<div class='box'><h2 class='titolo-voce'>${voce}</h2><pre>${JSON.stringify(data, null, 2)}</pre></div>`;
+  }));
+  contenitore.innerHTML = contenuti.join('<div class="separatore"></div>');
 }
 
 function filtraContenuto() {
@@ -102,9 +107,11 @@ function filtraContenuto() {
 }
 
 async function getIdForIndex(categoria) {
-  const res = await fetch("https://drive.google.com/uc?export=download&id=1_FqDS1q3XmOHeJf46TtqGWgGq69IQik2");
-  const json = await res.json();
-  const file = json.find(e => e.nome === `${categoria}_index.json`);
+  if (driveIndex.length === 0) {
+    const res = await fetch(`https://drive.google.com/uc?export=download&id=${driveIndexFileId}`);
+    driveIndex = await res.json();
+  }
+  const file = driveIndex.find(e => e.nome === `${categoria}_index.json` || e.nome === `${categoria}/${categoria}_index.json`);
   return file?.id;
 }
 </script>
