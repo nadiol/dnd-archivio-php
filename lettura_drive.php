@@ -103,8 +103,14 @@ if ($index_data) {
             foreach ($tratti as $k => $v) {
                 echo "<div><strong>" . badge_categoria($k) . " " . etichetta($k) . ":</strong><br>";
                 if (is_array($v)) {
-                    foreach ($v as $subk => $subv) {
-                        echo "• <em>" . etichetta($subk) . ":</em> " . (is_array($subv) ? json_encode($subv, JSON_UNESCAPED_UNICODE) : ripristina_accenti($subv)) . "<br>";
+                    if (array_keys($v) === range(0, count($v) - 1)) {
+                        foreach ($v as $val) {
+                            echo "• " . ripristina_accenti($val) . "<br>";
+                        }
+                    } else {
+                        foreach ($v as $subk => $subv) {
+                            echo "• <em>" . etichetta($subk) . ":</em> " . (is_array($subv) ? json_encode($subv, JSON_UNESCAPED_UNICODE) : ripristina_accenti($subv)) . "<br>";
+                        }
                     }
                 } else {
                     echo ripristina_accenti($v);
@@ -128,14 +134,12 @@ if ($index_data) {
                 echo "<h4>Sottorazze</h4><ul>";
                 foreach ($dati['sottorazze'] as $sr) {
                     echo "<li><details><summary><strong>" . ripristina_accenti($sr['nome'] ?? 'Senza nome') . "</strong></summary>";
+                    if (!empty($sr['descrizione'])) {
+                        echo "<p>" . ripristina_accenti($sr['descrizione']) . "</p>";
+                    }
                     if (!empty($sr['tratti'])) {
                         echo "<h5>Tratti</h5>";
                         stampa_tratti($sr['tratti']);
-                    } else {
-                        echo "<p><em>Nessun tratto specificato.</em></p>";
-                    }
-                    if (!empty($sr['descrizione'])) {
-                        echo "<p>" . ripristina_accenti($sr['descrizione']) . "</p>";
                     }
                     echo "</details></li>";
                 }
