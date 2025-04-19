@@ -1,3 +1,4 @@
+// js/lettura_drive.js
 
 const driveIndexFileId = "1_FqDS1q3XmOHeJf46TtqGWgGq69IQik2";
 let definizioni = {};
@@ -45,8 +46,8 @@ async function mostraPopupVociCategoria() {
     `<span onclick="caricaContenutoSingolo('${voce.nome}')" style="cursor:pointer; text-decoration:underline;">${voce.nome}</span></label><br>`
   ).join("");
 
-  popupAperto = true;
   popup.style.display = "block";
+  popupAperto = true;
 }
 
 function confermaSelezioneVoce() {
