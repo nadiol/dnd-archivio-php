@@ -20,7 +20,7 @@
 </div>
 
 <!-- Popup dinamico con elenco cliccabile -->
-<div id="popupVociCategoria" class="popup-categoria" style="display: none; position: absolute; top: 120px; left: 50px; background: #fff; border: 1px solid #ccc; padding: 15px; border-radius: 8px; z-index: 1000; max-height: 400px; overflow-y: auto;">
+<div id="popupVociCategoria" class="popup-categoria" style="display: none;">
   <strong>Seleziona voce:</strong>
   <div id="listaVociCategoria"></div>
   <button onclick="confermaSelezioneVoce()" class="btn-conferma">✔️ Conferma selezione</button>
@@ -36,15 +36,10 @@
 
 <script>
 const driveIndexFileId = "1_FqDS1q3XmOHeJf46TtqGWgGq69IQik2";
+let definizioni = {};
 const vociPerCategoria = {
-  razze: [],
-  classi: [],
-  sottoclassi: [],
-  incantesimi: [],
-  oggetti: [],
-  talenti: [],
-  competenze: [],
-  meccaniche_gioco: []
+  razze: [], classi: [], sottoclassi: [], incantesimi: [],
+  oggetti: [], talenti: [], competenze: [], meccaniche_gioco: []
 };
 let idMap = {};
 let popupAperto = false;
@@ -82,7 +77,8 @@ async function mostraPopupVociCategoria() {
 
   const elenco = vociPerCategoria[categoria];
   lista.innerHTML = elenco.map(voce =>
-    `<label><input type="checkbox" class="voce-selezionata" value="${voce.nome}"> <span onclick="caricaContenutoSingolo('${voce.nome}')" style="cursor:pointer; text-decoration:underline;">${voce.nome}</span></label><br>`
+    `<label><input type="checkbox" class="voce-selezionata" value="${voce.nome}"> ` +
+    `<span onclick="caricaContenutoSingolo('${voce.nome}')" style="cursor:pointer; text-decoration:underline;">${voce.nome}</span></label><br>`
   ).join("");
 
   popup.style.display = "block";
@@ -128,12 +124,19 @@ function filtraContenuto() {
   });
 }
 
+function aggiungiTooltip(chiave) {
+  if (definizioni[chiave]) {
+    return ` data-tooltip="${definizioni[chiave]}"`;
+  }
+  return "";
+}
+
 function renderizzaVoce(nome, json) {
   const render = (key, value) => {
     if (Array.isArray(value)) {
       return '<ul>' + value.map(v => `<li>${typeof v === 'object' ? render('', v) : v}</li>`).join('') + '</ul>';
     } else if (typeof value === 'object') {
-      return '<ul>' + Object.entries(value).map(([k, v]) => `<li><strong>${k}:</strong> ${render(k, v)}</li>`).join('') + '</ul>';
+      return '<ul>' + Object.entries(value).map(([k, v]) => `<li><strong${aggiungiTooltip(k)}>${k}:</strong> ${render(k, v)}</li>`).join('') + '</ul>';
     } else {
       return value;
     }
@@ -147,6 +150,11 @@ async function getIdForIndex(categoria) {
   const file = json.find(e => e.nome === `${categoria}_index.json` || e.nome === `${categoria}/${categoria}_index.json`);
   return file?.id;
 }
+
+(async () => {
+  const defFile = await fetch("https://drive.google.com/uc?export=download&id=1uoRwlA5A-Uxe_Uezg2xENVrTWVBiCyC-");
+  definizioni = await defFile.json();
+})();
 </script>
 
 <?php include 'includes/footer.php'; ?>
