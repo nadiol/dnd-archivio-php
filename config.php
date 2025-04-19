@@ -1,3 +1,1 @@
-<?php
-$OPENAI_API_KEY = 'INSERISCI-LA-TUA-CHIAVE-API-QUI';
-?>
+<?php // Configurazioni future, se necessarie ?>
