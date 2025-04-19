@@ -1,5 +1,7 @@
-<?php include 'includes/header.php'; ?>
+<?php 
 include_once 'utils.php';
+include 'includes/header.php'; 
+?>
 <h1>Gestione contenuti D&D</h1>
 <select id="tipoDato">
   <option value="razza">Razza</option>
