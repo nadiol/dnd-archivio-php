@@ -1,182 +1,59 @@
-// Script gestione-dati.js con parsing AI (via API OpenAI opzionale in futuro)
-
-function analizzaTesto() {
-  const tipo = document.getElementById("tipoDato").value;
-  const input = document.getElementById("inputGenerico").value;
-
-  if (document.getElementById("usaAI")?.checked) {
-    alert("Parsing AI non ancora attivo in questa versione. Verrà integrato prossimamente.");
-    return;
-  }
-
-  const lines = input.split('\n').map(l => l.trim()).filter(l => l);
-  const output = {
-    nome: '',
-    incremento_caratteristiche: {},
-    tratti: {},
-    lingue: [],
-    sottorazze: []
-  };
-
-  let currentBlock = '';
-  let buffer = '';
-  let sottorazza = null;
-
-  const flushBuffer = () => {
-    if (!currentBlock || !buffer) return;
-    const text = buffer.trim();
-    const target = sottorazza ? sottorazza.tratti : output.tratti;
-
-    if (currentBlock === 'robustezza' && sottorazza) {
-      sottorazza.tratti['Robustezza nanica'] = text;
-    } else if (currentBlock === 'lingue') {
-      const lingue = text.match(/Comune|Nanico|Elfico|Draconico/gi);
-      if (lingue) output.lingue = [...new Set([...output.lingue, ...lingue])];
-    } else if (["allineamento", "età", "taglia", "velocità_m"].includes(currentBlock)) {
-      output[currentBlock] = text;
-    } else {
-      const key = currentBlock.charAt(0).toUpperCase() + currentBlock.slice(1);
-      target[key] = text;
-    }
-    buffer = '';
-  };
-
-  lines.forEach(line => {
-    if (/^Nano\s*$/i.test(line)) {
-      output.nome = 'Nano';
-      return;
-    }
-
-    if (/^Nano delle\s+/i.test(line)) {
-      flushBuffer();
-      if (sottorazza) output.sottorazze.push(sottorazza);
-      sottorazza = {
-        nome: line.trim(),
-        incremento_caratteristiche: {},
-        tratti: {}
-      };
-      currentBlock = '';
-      return;
-    }
-
-    if (/^Incremento dei punteggi/i.test(line)) { flushBuffer(); currentBlock = 'incremento'; return; }
-    if (/^Allineamento/i.test(line)) { flushBuffer(); currentBlock = 'allineamento'; return; }
-    if (/^Età/i.test(line)) { flushBuffer(); currentBlock = 'età'; return; }
-    if (/^Taglia/i.test(line)) { flushBuffer(); currentBlock = 'taglia'; return; }
-    if (/^Velocità/i.test(line)) { flushBuffer(); currentBlock = 'velocità_m'; return; }
-    if (/^Scurovisione/i.test(line)) { flushBuffer(); currentBlock = 'scurovisione'; return; }
-    if (/^Resilienza/i.test(line)) { flushBuffer(); currentBlock = 'resilienza nanica'; return; }
-    if (/^Addestramento da combattimento/i.test(line)) { flushBuffer(); currentBlock = 'addestramento da combattimento'; return; }
-    if (/^Competenza negli strumenti/i.test(line)) { flushBuffer(); currentBlock = 'competenza negli strumenti'; return; }
-    if (/^Esperto minatore/i.test(line)) { flushBuffer(); currentBlock = 'esperto minatore'; return; }
-    if (/^Linguaggi/i.test(line)) { flushBuffer(); currentBlock = 'lingue'; return; }
-    if (/^Robustezza/i.test(line)) { flushBuffer(); currentBlock = 'robustezza'; return; }
-
-    if (currentBlock === 'incremento') {
-      if (/Costituzione.*\d/.test(line)) {
-        const descr = line;
-        output.incremento_caratteristiche['Costituzione'] = descr;
-      } else if (/Saggezza.*\d/.test(line) && sottorazza) {
-        const descr = line;
-        sottorazza.incremento_caratteristiche['Saggezza'] = descr;
-      }
-    } else {
-      buffer += (buffer ? ' ' : '') + line;
-    }
-  });
-
-  flushBuffer();
-  if (sottorazza) output.sottorazze.push(sottorazza);
-
-  mostraEditor(output);
-  aggiornaAnteprima();
-}
-
-function mostraEditor(dati) {
-  const container = document.getElementById("outputEditor");
-  container.innerHTML = '';
-  window.currentData = dati;
-
-  for (const key in dati) {
-    const value = dati[key];
-
-    if (typeof value === 'object' && !Array.isArray(value)) {
-      const fieldset = document.createElement("fieldset");
-      const legend = document.createElement("legend");
-      legend.textContent = key;
-      fieldset.appendChild(legend);
-
-      for (const sub in value) {
-        const label = document.createElement("label");
-        label.textContent = sub;
-        const input = document.createElement("input");
-        input.name = `${key}.${sub}`;
-        input.value = value[sub];
-        input.style.width = '100%';
-        input.addEventListener('input', aggiornaAnteprima);
-        fieldset.appendChild(label);
-        fieldset.appendChild(document.createElement("br"));
-        fieldset.appendChild(input);
-        fieldset.appendChild(document.createElement("br"));
-      }
-      container.appendChild(fieldset);
-    } else if (Array.isArray(value)) {
-      const label = document.createElement("label");
-      label.textContent = key;
-      const input = document.createElement("input");
-      input.name = key;
-      input.value = value.join(', ');
-      input.style.width = '100%';
-      input.addEventListener('input', aggiornaAnteprima);
-      container.appendChild(label);
-      container.appendChild(document.createElement("br"));
-      container.appendChild(input);
-      container.appendChild(document.createElement("br"));
-    } else {
-      const label = document.createElement("label");
-      label.textContent = key;
-      const input = document.createElement("input");
-      input.name = key;
-      input.value = value;
-      input.style.width = '100%';
-      input.addEventListener('input', aggiornaAnteprima);
-      container.appendChild(label);
-      container.appendChild(document.createElement("br"));
-      container.appendChild(input);
-      container.appendChild(document.createElement("br"));
-    }
-  }
-
-  document.getElementById("salvaBtn").classList.remove("hidden");
-}
-
-function aggiornaAnteprima() {
-  const inputs = document.querySelectorAll("#outputEditor input");
-  const dati = window.currentData;
-
-  inputs.forEach(input => {
-    const [group, subkey] = input.name.split('.');
-    if (subkey) {
-      if (dati[group] && typeof dati[group] === 'object') {
-        dati[group][subkey] = input.value;
-      }
-    } else if (Array.isArray(dati[input.name])) {
-      dati[input.name] = input.value.split(',').map(v => v.trim());
-    } else {
-      dati[input.name] = input.value;
-    }
-  });
-
-  const output = JSON.stringify(dati, null, 2);
-  document.getElementById("anteprimaJson").textContent = output;
-}
-
-function salvaJsonFinale() {
-  const blob = new Blob([
-    document.getElementById("anteprimaJson").textContent
-  ], { type: "application/json" });
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
-  link.download = "razza_dnd.json";
-  link.click();
-}
+Nano
+Tratti dei nani
+Un personaggio nano dispone di varie capacità
+innate, intrinsecamente correlate alla sua natura
+nanica.
+Incremento dei punteggi di caratteristica.
+Il punteggio di Costituzione di un nano aumenta di 2.
+Allineamento. La maggior parte dei nani è legale
+e crede fermamente nei benefici di una società ben
+ordinata. Molti nani tendono anche al bene, danno
+grande valore alla correttezza e credono che tutti
+debbano condividere i benefici concessi da un ordine
+equo.
+Età. I nani maturano allo stesso ritmo degli umani,
+ma sono considerati giovani fino al raggiungimento
+dei 50 anni. Vivono in media 350 anni.
+Taglia. Un nano è alto da 1,2 a 1,5 metri e pesa
+circa 75 kg. È di taglia Media.
+Velocità. La velocità base sul terreno di un nano
+è di 7,5 metri. Tale velocità non viene ridotta se
+il nano indossa un'armatura pesante.
+Scurovisione. Un nano è abituato a vivere
+sottoterra e beneficia di una vista superiore
+nell'oscurità e nelle condizioni di luce fioca.
+In condizioni di luce fioca, può vedere fino a una
+distanza di 18 metri come se si trovasse in
+condizioni di luce intensa e nell'oscurità come se si
+trovasse in presenza di luce fioca. Nell'oscurità non
+è in grado di discernere i colori, ma solo le tonalità
+di grigio.
+Resilienza nanica. Un nano dispone di vantaggio
+ai tiri salvezza contro il veleno e di resistenza ai
+danni da veleno.
+Addestramento da combattimento nanico.
+Ha competenza nelle asce, nelle asce da battaglia,
+nei martelli da guerra e nei martelli leggeri.
+Competenza negli strumenti. Un nano ha
+competenza in un gruppo di strumenti da artigiano
+a sua scelta: strumenti da fabbro, scorte da birraio
+o strumenti da costruttore.
+Esperto minatore. Ogni volta che un nano effettua
+una prova di Intelligenza (Storia) relativa all'origine
+di una struttura in pietra, è considerato avere
+competenza nell'abilità Storia e aggiunge il doppio
+del suo bonus di competenza alla prova anziché il
+suo normale bonus di competenza.
+Linguaggi. Un nano è in grado di parlare, leggere
+e scrivere in Comune e in Nanico. Il Nanico è una
+lingua ricca di aspre consonanti e di suoni gutturali,
+inflessioni che traspaiono anche negli altri linguaggi
+che il nano potrebbe parlare.
+Nano delle colline
+Un nano delle colline è dotato di sensi acuti, di una
+profonda intuizione e di una straordinaria resilienza.
+Incremento dei punteggi di caratteristica.
+Il punteggio di Saggezza di un nano aumenta di 1.
+Robustezza nanica. Il massimo dei punti ferita di
+un nano aumenta di 1 e aumenta di nuovo di 1 ogni
+volta che acquisisce un livello.
