@@ -20,7 +20,7 @@
 </div>
 
 <!-- Popup dinamico con elenco cliccabile -->
-<div id="popupVociCategoria" class="popup-categoria" style="display: none;">
+<div id="popupVociCategoria" class="popup-categoria" style="display: none; position: absolute; top: 120px; left: 50px; background: #fff; border: 1px solid #ccc; padding: 15px; border-radius: 8px; z-index: 1000; max-height: 400px; overflow-y: auto;">
   <strong>Seleziona voce:</strong>
   <div id="listaVociCategoria"></div>
   <button onclick="confermaSelezioneVoce()" class="btn-conferma">✔️ Conferma selezione</button>
