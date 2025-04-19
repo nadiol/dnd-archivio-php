@@ -1,6 +1,9 @@
+
 services:
   - type: web
     name: dnd-archivio-php
     env: docker
     plan: free
-    dockerfilePath: Dockerfile
+    dockerfilePath: ./Dockerfile
+    branch: main
+    rootDir: .

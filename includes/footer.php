@@ -1,1 +1,1 @@
-<footer><p>© Archivio D&D</p></footer>
+<?php /* footer */ ?>

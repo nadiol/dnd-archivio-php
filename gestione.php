@@ -1,1 +1,12 @@
-<html><head><title>Gestione contenuti D&D</title><script src="js/gestione-dati.js" defer></script><link rel="stylesheet" href="css/gestione-dati.css"></head><body><h1>Gestione contenuti D&D</h1><select id="tipoDato"><option value="razza">Razza</option></select><textarea id="inputGenerico" rows="20" cols="80"></textarea><br><button onclick="analizzaTesto()">📥 Analizza e Scompatta</button><div id="outputEditor"></div><pre id="anteprimaJson"></pre><button onclick="salvaJsonFinale()" id="salvaBtn" class="hidden">💾 Scarica JSON</button></body></html>
+<?php include 'includes/header.php'; ?>
+<h1>Gestione contenuti D&D</h1>
+<select id="tipoDato">
+  <option value="razza">Razza</option>
+</select><br><br>
+<textarea id="inputGenerico" rows="20" cols="100" placeholder="Incolla qui il testo da analizzare..."></textarea><br>
+<button onclick="analizzaTesto()">📥 Analizza e Scompatta</button><br><br>
+<div id="outputEditor"></div>
+<pre id="anteprimaJson"></pre>
+<button onclick="salvaJsonFinale()" id="salvaBtn" class="hidden">💾 Scarica JSON</button>
+<script src="js/gestione-dati.js" defer></script>
+<?php include 'includes/footer.php'; ?>
