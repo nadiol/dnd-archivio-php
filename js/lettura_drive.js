@@ -1,6 +1,5 @@
 // js/lettura_drive.js
 
-const driveIndexFileId = "1_FqDS1q3XmOHeJf46TtqGWgGq69IQik2";
 let definizioni = {};
 const vociPerCategoria = {
   razze: [], classi: [], sottoclassi: [], incantesimi: [],
@@ -34,7 +33,7 @@ async function mostraPopupVociCategoria() {
 
   if (vociPerCategoria[categoria].length === 0) {
     const indexId = await getIdForIndex(categoria);
-    const response = await fetch(`https://drive.google.com/uc?export=download&id=${indexId}`);
+    const response = await fetch(`proxy.php?id=${indexId}`);
     const json = await response.json();
     vociPerCategoria[categoria] = json;
     json.forEach(el => idMap[el.nome] = el.id);
@@ -64,7 +63,7 @@ async function mostraContenutiMultipli(voci) {
   contenitore.innerHTML = "Caricamento...";
   const blocchi = await Promise.all(voci.map(async (voce) => {
     const id = idMap[voce];
-    const res = await fetch(`https://drive.google.com/uc?export=download&id=${id}`);
+    const res = await fetch(`proxy.php?id=${id}`);
     const json = await res.json();
     return renderizzaVoce(voce, json);
   }));
@@ -75,7 +74,7 @@ async function caricaContenutoSingolo(voce) {
   if (!idMap[voce]) return;
   const contenitore = document.getElementById("contenutoJSON");
   contenitore.innerHTML = "Caricamento...";
-  const res = await fetch(`https://drive.google.com/uc?export=download&id=${idMap[voce]}`);
+  const res = await fetch(`proxy.php?id=${idMap[voce]}`);
   const json = await res.json();
   contenitore.innerHTML = renderizzaVoce(voce, json);
 }
@@ -110,13 +109,13 @@ function renderizzaVoce(nome, json) {
 }
 
 async function getIdForIndex(categoria) {
-  const res = await fetch(`https://drive.google.com/uc?export=download&id=${driveIndexFileId}`);
+  const res = await fetch("proxy.php?id=1_FqDS1q3XmOHeJf46TtqGWgGq69IQik2");
   const json = await res.json();
   const file = json.find(e => e.nome === `${categoria}_index.json` || e.nome === `${categoria}/${categoria}_index.json`);
   return file?.id;
 }
 
 (async () => {
-  const defFile = await fetch("https://drive.google.com/uc?export=download&id=1uoRwlA5A-Uxe_Uezg2xENVrTWVBiCyC-");
+  const defFile = await fetch("proxy.php?id=1uoRwlA5A-Uxe_Uezg2xENVrTWVBiCyC-");
   definizioni = await defFile.json();
 })();
