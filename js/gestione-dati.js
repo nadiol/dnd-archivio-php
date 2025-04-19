@@ -101,6 +101,20 @@ function mostraEditor(dati) {
   container.innerHTML = '';
   window.currentData = dati;
 
+  const createField = (key, value, prefix = '') => {
+    const label = document.createElement("label");
+    label.textContent = prefix + key;
+    const input = document.createElement("input");
+    input.name = prefix + key;
+    input.value = value;
+    input.style.width = '100%';
+    input.addEventListener('input', aggiornaAnteprima);
+    container.appendChild(label);
+    container.appendChild(document.createElement("br"));
+    container.appendChild(input);
+    container.appendChild(document.createElement("br"));
+  };
+
   for (const key in dati) {
     const value = dati[key];
 
@@ -111,66 +125,54 @@ function mostraEditor(dati) {
       fieldset.appendChild(legend);
 
       for (const sub in value) {
-        const label = document.createElement("label");
-        label.textContent = sub;
-        const input = document.createElement("input");
-        input.name = `${key}.${sub}`;
-        input.value = value[sub];
-        input.style.width = '100%';
-        input.addEventListener('input', aggiornaAnteprima);
-        fieldset.appendChild(label);
-        fieldset.appendChild(document.createElement("br"));
-        fieldset.appendChild(input);
-        fieldset.appendChild(document.createElement("br"));
+        createField(sub, value[sub], `${key}.`);
       }
       container.appendChild(fieldset);
     } else if (Array.isArray(value)) {
-      const label = document.createElement("label");
-      label.textContent = key;
-      const input = document.createElement("input");
-      input.name = key;
-      input.value = value.join(', ');
-      input.style.width = '100%';
-      input.addEventListener('input', aggiornaAnteprima);
-      container.appendChild(label);
-      container.appendChild(document.createElement("br"));
-      container.appendChild(input);
-      container.appendChild(document.createElement("br"));
+      if (key === 'sottorazze') {
+        value.forEach((sotto, index) => {
+          const fieldset = document.createElement("fieldset");
+          const legend = document.createElement("legend");
+          legend.textContent = `Sottorazza ${index + 1}`;
+          fieldset.appendChild(legend);
+          for (const subkey in sotto) {
+            if (typeof sotto[subkey] === 'object') {
+              for (const k in sotto[subkey]) {
+                createField(`${subkey}.${k}`, sotto[subkey][k], `sottorazze[${index}].`);
+              }
+            } else {
+              createField(subkey, sotto[subkey], `sottorazze[${index}].`);
+            }
+          }
+          container.appendChild(fieldset);
+        });
+      } else {
+        createField(key, value.join(', '));
+      }
     } else {
-      const label = document.createElement("label");
-      label.textContent = key;
-      const input = document.createElement("input");
-      input.name = key;
-      input.value = value;
-      input.style.width = '100%';
-      input.addEventListener('input', aggiornaAnteprima);
-      container.appendChild(label);
-      container.appendChild(document.createElement("br"));
-      container.appendChild(input);
-      container.appendChild(document.createElement("br"));
+      createField(key, value);
     }
   }
-
   document.getElementById("salvaBtn").classList.remove("hidden");
 }
 
 function aggiornaAnteprima() {
   const inputs = document.querySelectorAll("#outputEditor input");
   const dati = window.currentData;
-
   inputs.forEach(input => {
-    const [group, subkey] = input.name.split('.');
-    if (subkey) {
-      if (dati[group] && typeof dati[group] === 'object') {
-        dati[group][subkey] = input.value;
+    const path = input.name.split('.');
+    let ref = dati;
+    for (let i = 0; i < path.length - 1; i++) {
+      if (path[i].includes("[") && path[i].includes("]")) {
+        const base = path[i].split('[')[0];
+        const idx = parseInt(path[i].match(/\[(\d+)\]/)[1]);
+        ref = ref[base][idx];
+      } else {
+        ref = ref[path[i]];
       }
-    } else if (Array.isArray(dati[input.name])) {
-      dati[input.name] = input.value.split(',').map(v => v.trim());
-    } else {
-      dati[input.name] = input.value;
     }
+    ref[path[path.length - 1]] = input.value;
   });
-
   const output = JSON.stringify(dati, null, 2);
   document.getElementById("anteprimaJson").textContent = output;
 }
