@@ -13,7 +13,7 @@ function scarica_da_drive($id) {
     return $output;
 }
 
-$json_raw = scarica_da_drive("14QzWfVXu-MPlq0YxTCXJ-NV356hdXU1T");
+$json_raw = scarica_da_drive("_FqDS1q3XmOHeJf46TtqGWgGq69IQik2");
 
 $index_data = null;
 if (!$json_raw) {
