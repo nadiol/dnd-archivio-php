@@ -71,6 +71,7 @@ input[type="text"] {
   border-radius: 8px;
   margin-bottom: 20px;
   box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  position: relative;
 }
 
 .titolo-voce {
@@ -89,6 +90,23 @@ pre {
   border-radius: 5px;
   overflow-x: auto;
   font-family: Consolas, monospace;
+}
+
+/* Tooltip dinamico */
+[data-tooltip]:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  top: 0;
+  left: 100%;
+  margin-left: 10px;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 6px 10px;
+  font-size: 14px;
+  border-radius: 5px;
+  white-space: nowrap;
+  z-index: 9999;
+  pointer-events: none;
 }
 
 @media (max-width: 600px) {
