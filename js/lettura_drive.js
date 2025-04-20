@@ -1,9 +1,10 @@
+
 // js/lettura_drive.js
 
 let definizioni = {};
 const vociPerCategoria = {
   razze: [], classi: [], sottoclassi: [], incantesimi: [],
-  oggetti: [], talenti: [], competenze: [], meccaniche_gioco: []
+  oggetti: [], talenti: [], competenze: [], meccaniche_gioco: [], tabelle_slot: []
 };
 let idMap = {};
 let popupAperto = false;
@@ -76,7 +77,7 @@ async function caricaContenutoSingolo(voce) {
   contenitore.innerHTML = "Caricamento...";
   const res = await fetch(`proxy.php?id=${idMap[voce]}`);
   const json = await res.json();
-  contenitore.innerHTML = renderizzaVoce(voce, json);
+  contenitore.innerHTML = await renderizzaVoce(voce, json);
 }
 
 function filtraContenuto() {
@@ -95,27 +96,38 @@ function aggiungiTooltip(chiave) {
   return "";
 }
 
-function renderizzaVoce(nome, json) {
-  const render = (key, value) => {
+async function renderizzaVoce(nome, json) {
+  const render = async (key, value) => {
     if (Array.isArray(value)) {
-      return '<ul>' + value.map(v => `<li>${typeof v === 'object' ? render('', v) : v}</li>`).join('') + '</ul>';
-    } else if (typeof value === 'object') {
-      return '<ul>' + Object.entries(value).map(([k, v]) => `<li><strong${aggiungiTooltip(k)}>${k}:</strong> ${render(k, v)}</li>`).join('') + '</ul>';
-    } else {
-      return value;
+      return `<strong>${key}:</strong> <ul>` + value.map(v => `<li>${v}</li>`).join("") + "</ul>";
     }
+
+    // Supporto per tabelle slot esterne
+    if (typeof value === "string" && value.startsWith("inserire_tabella_slot_livelli_")) {
+      const classe = value.replace("inserire_tabella_slot_livelli_", "");
+      const fileKey = "tabella_slot/tabella_slot_livelli_" + classe + ".json";
+      const id = idMap[fileKey];
+
+      if (id) {
+        const res = await fetch(`proxy.php?id=${id}`);
+        const data = await res.json();
+        return `<strong>${key}:</strong><pre>${JSON.stringify(data.slot_incantesimi_per_livello, null, 2)}</pre>`;
+      } else {
+        return `<strong>${key}:</strong> <em>[tabella slot non trovata per ${classe}]</em>`;
+      }
+    }
+
+    if (typeof value === "object" && value !== null) {
+      return `<strong>${key}:</strong><pre>${JSON.stringify(value, null, 2)}</pre>`;
+    }
+
+    return `<strong>${key}:</strong> ${value}`;
   };
-  return `<div class="box"><h2 class="titolo-voce">${nome}</h2>${render('', json)}</div>`;
-}
 
-async function getIdForIndex(categoria) {
-  const res = await fetch("proxy.php?id=1_FqDS1q3XmOHeJf46TtqGWgGq69IQik2");
-  const json = await res.json();
-  const file = json.find(e => e.nome === `${categoria}_index.json` || e.nome === `${categoria}/${categoria}_index.json`);
-  return file?.id;
+  let html = `<div class="box"><h2>${nome}</h2>`;
+  for (const [key, value] of Object.entries(json)) {
+    html += "<div class='campo-json'>" + await render(key, value) + "</div>";
+  }
+  html += "</div>";
+  return html;
 }
-
-(async () => {
-  const defFile = await fetch("proxy.php?id=1uoRwlA5A-Uxe_Uezg2xENVrTWVBiCyC-");
-  definizioni = await defFile.json();
-})();
